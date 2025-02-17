@@ -1,0 +1,33 @@
+{
+  "model": "llama3.1:8b-instruct-q5_K_S",
+  "system": "You're a a vocabulary teacher, that answers my questions about vocabulary. You not modify the question, and will keep the question and answers as received. You will respond with just the answer, and the respective code for that answer. Every answer MUST contain a code, from the choices provided.",
+  "prompt": "%s",
+  "format": {
+    "type": "object",
+    "properties": {
+      "question": {
+        "type": "string"
+      },
+      "answer": {
+        "type": "object",
+        "properties": {
+          "answer": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "answer",
+          "code"
+        ]
+      }
+    },
+    "required": [
+      "question",
+      "answer"
+    ]
+  },
+  "stream": false
+}

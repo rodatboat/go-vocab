@@ -1,0 +1,59 @@
+{
+    "v": 3,
+    "question": {
+        "turn": 66961,
+        "type": "H",
+        "category": "definition",
+        "code": "PGRpdiBjbGFzcz0iY2hhbGxlbmdlLXNsaWRlIHdpZGUgYXVkaW8tZW5hYmxlZCIgZGF0YS1zbGlkZS10eXBlPSJjaG9pY2UiPg0KPGRpdiBjbGFzcz0id3JhcHBlciI+DQo8ZGl2IGNsYXNzPSJzbGlkZXIiPg0KPHNlY3Rpb24gY2xhc3M9ImxlZnQiPg0KPGRpdiBjbGFzcz0icXVlc3Rpb24gdHlwZUgiIGRhdGEtdGVtcGxhdGU9Im11bHRpcGxlLWNob2ljZSI+DQoJDQoNCg0KDQoNCg0KDQoNCg0KDQoNCg0KDQoJPGRpdiBjbGFzcz0ibW9kZSI+DQoJDQoJCQ0KCQkNCgkJDQoJCQ0KCQk8c3BhbiBjbGFzcz0ibWFzdGVyeSI+QlJVU0gtVVA8L3NwYW4+DQoJOiA8c3BhbiBjbGFzcz0icG9pbnRWYWx1ZSI+MTAwPC9zcGFuPiBQT0lOVFM8L2Rpdj4NCg0KDQo8ZGl2IGNsYXNzPSJxdWVzdGlvbkNvbnRlbnQiPg0KCQ0KCQk8ZGl2IGNsYXNzPSJzZW50ZW5jZSB0eXBlSCI+VGhpc3RsZXMsIFdoaXRlIERhaXN5LCBhbmQgZXZlcnkgcGxhbnQgdGhhdCBpbXBlZGVzIHRpbGxhZ2UgYW5kIGRpbWluaXNoZXMgY3JvcHMsIGFyZSBub3VyaXNoZWQgYW5kIDxzdHJvbmc+ZGlmZnVzZWQ8L3N0cm9uZz4gYnkgbWVhbnMgb2YgcGFzdHVyZXMuPC9kaXY+CQ0KCQkNCgkJCTxhIGNsYXNzPSJzb3VyY2UiIGhyZWY9Imh0dHBzOi8vd3d3LnZvY2FidWxhcnkuY29tL2N2aWQvcVNMVXlrVXVnU3R2N3g5VkZLcjhXZiIgdGFyZ2V0PSJfYmxhbmsiIHRpdGxlPSJXaGF0IEkga25vdyBvZiBmYXJtaW5nOgphIHNlcmllcyBvZiBicmllZiBhbmQgcGxhaW4gZXhwb3NpdGlvbnMgb2YgcHJhY3RpY2FsCmFncmljdWx0dXJlIGFzIGFuIGFydCBiYXNlZCB1cG9uIHNjaWVuY2UiPlNvdXJjZTogV2hhdCBJIGtub3cgb2YgZmFybWluZzoKYSBzZXJpZXMgb2YgYnJpZWYgYW5kIHBsYWluIGV4cG9zaXRpb25zIG9mIHByYWN0aWNhbAphZ3JpY3VsdHVyZSBhcyBhbiBhcnQgYmFzZWQgdXBvbiBzY2llbmNlPC9hPg0KCQkNCgkNCjwvZGl2Pg0KDQo8ZGl2IGNsYXNzPSJpbnN0cnVjdGlvbnMiPg0KCQ0KCQkNCgkJCUluIHRoZSBzZW50ZW5jZSBhYm92ZSwgPHN0cm9uZz5kaWZmdXNlZDwvc3Ryb25nPiBoYXMgdGhlDQoJCQlzYW1lIG9yIGFsbW9zdCB0aGUgc2FtZSBtZWFuaW5nIGFzOg0KCQkNCgkJDQoJCQ0KCQkNCgkJDQoJCQ0KCQkNCgkJDQoJDQo8L2Rpdj4NCg0KDQoJPGRpdiBjbGFzcz0iY2hvaWNlcyI+DQoJCQ0KCQkJDQoJCQkNCgkJCQkNCgkJCQkNCgkJCQkJPGEgaHJlZj0iIyIgYWNjZXNza2V5PSIxQSIgZGF0YS1ub25jZT0iOWJwNDNqIiANCgkJCQkJCT5mcmFnbWVudGVkDQoJCQkJCSAJIDxkaXYgY2xhc3M9InRvb2xzIj48c3BhbiByb2xlPSJidXR0b24iIHdvcmQ9ImZyYWdtZW50ZWQiIGNsYXNzPSJsb29rdXAiPjwvc3Bhbj48L2Rpdj4NCgkJCQkJPC9hPg0KCQkJCQ0KCQkJCQk8YSBocmVmPSIjIiBhY2Nlc3NrZXk9IjJCIiBkYXRhLW5vbmNlPSJhbno2d3kiIA0KCQkJCQkJPmRpc3BlcnNlZA0KCQkJCQkgCSA8ZGl2IGNsYXNzPSJ0b29scyI+PHNwYW4gcm9sZT0iYnV0dG9uIiB3b3JkPSJkaXNwZXJzZWQiIGNsYXNzPSJsb29rdXAiPjwvc3Bhbj48L2Rpdj4NCgkJCQkJPC9hPg0KCQkJCQ0KCQkJCQk8YSBocmVmPSIjIiBhY2Nlc3NrZXk9IjNDIiBkYXRhLW5vbmNlPSJsM2N1MmkiIA0KCQkJCQkJPmh5ZHJhdGVkDQoJCQkJCSAJIDxkaXYgY2xhc3M9InRvb2xzIj48c3BhbiByb2xlPSJidXR0b24iIHdvcmQ9Imh5ZHJhdGVkIiBjbGFzcz0ibG9va3VwIj48L3NwYW4+PC9kaXY+DQoJCQkJCTwvYT4NCgkJCQkNCgkJCQkJPGEgaHJlZj0iIyIgYWNjZXNza2V5PSI0RCIgZGF0YS1ub25jZT0ic2ZwdnEiIA0KCQkJCQkJPmVucmljaGVkDQoJCQkJCSAJIDxkaXYgY2xhc3M9InRvb2xzIj48c3BhbiByb2xlPSJidXR0b24iIHdvcmQ9ImVucmljaGVkIiBjbGFzcz0ibG9va3VwIj48L3NwYW4+PC9kaXY+DQoJCQkJCTwvYT4NCgkJCQkNCgkJCQ0KCQkNCgk8L2Rpdj4NCg0KDQoNCgk8ZGl2IGNsYXNzPSJsaWZlTGluZXMiIHN0eWxlPSJkaXNwbGF5Om5vbmU7IiA+DQoJCQ0KCQkJIDxzcGFuIGNsYXNzPSJsYWJlbCI+Tm90IHN1cmU/IEdldCBhIGhpbnQ6PC9zcGFuPg0KCQkJIDxzcGFuIHN0eWxlPSJ3aGl0ZS1zcGFjZTogbm93cmFwOyI+PGEgZGF0YS10eXBlPSJGIiBjbGFzcz0iZmlmdHlmaWZ0eSIgdGl0bGU9IldlJ2xsIGVsaW1pbmF0ZSB0d28gY2hvaWNlcyBmb3IgeW91LiIgaHJlZj0iamF2YXNjcmlwdDp2b2lkKDApOyI+NTAvNTA8L2E+DQoJCQkgCTxhIGRhdGEtdHlwZT0iRSIgY2xhc3M9ImludGhld2lsZCIgdGl0bGU9IlNlZSBleGFtcGxlcyBvZiB0aGlzIHdvcmQgdXNlZCBpbiBjb250ZXh0LiIgaHJlZj0iamF2YXNjcmlwdDp2b2lkKDApOyI+V29yZCBpbiB0aGUgV2lsZDwvYT4NCgkJCSAJPGEgZGF0YS10eXBlPSJEIiBjbGFzcz0ic2VlZGVmIiB0aXRsZT0iU2VlIHRoZSBkZWZpbml0aW9uIG9mIHRoaXMgd29yZCIgaHJlZj0iamF2YXNjcmlwdDp2b2lkKDApOyI+RGVmaW5pdGlvbjwvYT4NCgkJCSA8L3NwYW4+DQoJCSANCgkgPC9kaXY+DQoJPGRpdiBjbGFzcz0ibGlmZUxpbmVDb250ZW50IiBzdHlsZT0iZGlzcGxheTpub25lOyIgPjwvZGl2PgkJDQoNCg0KDQo8L2Rpdj4NCjxkaXYgY2xhc3M9InN0YXR1cyI+PC9kaXY+DQo8ZGl2IGNsYXNzPSJkZWYiPjwvZGl2Pg0KPC9zZWN0aW9uPg0KDQo8c2VjdGlvbiBjbGFzcz0icmlnaHQgYmx1cmItY29udGFpbmVyIj48L3NlY3Rpb24+DQoNCjwvZGl2PjwvZGl2PjwvZGl2Pg==",
+        "difficulty": 2.17,
+        "answerstats": {
+            "correct": 21081,
+            "total": 32211
+        }
+    },
+    "round": {
+        "number": 1,
+        "streak": 0,
+        "played_count": 0
+    },
+    "action": "newround",
+    "pdata": {
+        "points": 12795855,
+        "level": {
+            "id": "L17",
+            "name": "Walking Dictionary",
+            "milestone": 0,
+            "progress": 74
+        },
+        "numplayed": 66961,
+        "nummastered": 4854,
+        "lists": [
+            {
+                "current": false,
+                "listId": 1993157,
+                "wordcount": 25,
+                "priority": 0,
+                "progress": 1.0,
+                "name": "Giving Words"
+            },
+            {
+                "current": false,
+                "listId": 1623099,
+                "wordcount": 13,
+                "priority": 1,
+                "progress": 1.0,
+                "name": "Cat Vocabulary: A Feline Lexicon"
+            }
+        ]
+    },
+    "game": {
+        "wordlistid": 2444808,
+        "name": "master",
+        "progress": 0.0,
+        "type": "p",
+        "played": 0,
+        "correct": 0,
+        "points": 0
+    },
+    "secret": "MjAyMzAxMDE35LSQICdilxwqeBbRtE5rg6ikwykHYMyBBFONgBaxXxJVdktmQxj4RNCdo2Kz16hszogjIW4CG6dIh-ZTUxlqdwt0W3O7672Emusglvw6klJdDV-jgXd3uREqzYfBHjNEmL3W0AfW4rGrJjpLky052v09WuqJEaIBUl0gxOBcEMTtAY46MZCMEMxGyu5tZ9TJqqaR_v-CCtbzeRfG1qi1sxRNt3G8vz_zmeRhB4Jdaomk_7WU5Tx6wIiwP2PdwA40Gtd3l0zZI4vAdPd6yYXLFAGJzHWEAKLimnPV3UpBjYaG8y4SBXextSGuWBS7xwsv-qFOYp8kjRj5iqsjQ1_S"
+}
