@@ -49,7 +49,7 @@ type RunDBConfig struct {
 type Runner struct {
 	DBConfig      RunDBConfig
 	Conn          *pgx.Conn
-	ctx           RunContext
+	ctx           *RunContext
 	client        cycletls.CycleTLS
 	clientOptions cycletls.Options
 }
@@ -93,7 +93,7 @@ func New(params RunParams) *Runner {
 			user:     "postgres",
 			password: "password",
 		},
-		ctx: RunContext{
+		ctx: &RunContext{
 			Cookies:     options.Cookies,
 			OllamaQuery: string(rawQuery),
 		},
@@ -136,7 +136,7 @@ func (r *Runner) IsLoggedIn() bool {
 	return res
 }
 
-func (r *Runner) Start(listId int) {
+func (r *Runner) Start(listId int) model.Question {
 	payload := model.StartPracticeReq{
 		V:            3,
 		ActivityType: 'p',
@@ -152,7 +152,7 @@ func (r *Runner) Start(listId int) {
 	body, err := json.Marshal(payload)
 	if err != nil {
 		fmt.Println("Error marshaling JSON:", err)
-		return
+		panic(err)
 	}
 
 	r.clientOptions.Body = string(body)
@@ -172,13 +172,18 @@ func (r *Runner) Start(listId int) {
 		panic(err)
 	}
 
-	question, _, _ := utils.ExtractQuestion(data)
-	r.SaveQuestionToDB(*question)
-	// Ask LLM method
-	// Then send answer, fill question based on response
-	// Then save DB
+	secret, err := utils.ExtractSecret(data)
+	if err != nil {
+		fmt.Println("Error extracting secret:", err)
+		panic(err)
+	}
+	r.ctx.Secret = secret
 
-	// Then do loop
+	question, _, _ := utils.ExtractQuestion(data)
+	r.ctx.CurrentQuestion = *question
+	r.SaveQuestionToDB(*question)
+
+	return *question
 }
 
 // Initializes db connection, and creates required tables.
@@ -339,5 +344,126 @@ func (r *Runner) Ask(question model.Question) model.QuestionChoices {
 	return model.QuestionChoices{
 		Key:   code,
 		Value: answer,
+	}
+}
+
+func (r *Runner) AnswerQuestion(answer model.QuestionChoices) {
+	SAVE_ANSWER_URI := "https://www.vocabulary.com/challenge/saveanswer.json"
+	// Send request, update secret, get next question after this method.
+	requestPayload := model.AnswerReq{
+		Secret: r.ctx.Secret,
+		V:      3,
+		Rt:     0, // Need to be timer between
+		A:      answer.Key,
+	}
+
+	// Set body
+	body, err := json.Marshal(requestPayload)
+	if err != nil {
+		fmt.Println("Error marshaling JSON:", err)
+		panic(err)
+	}
+
+	r.clientOptions.Body = string(body)
+
+	fmt.Println("Answering question...")
+	resp, err := r.client.Do(SAVE_ANSWER_URI, r.clientOptions, "POST")
+	if err != nil {
+		fmt.Println("Error making HTTP request:", err)
+		panic(err)
+	}
+
+	// Parse the JSON response
+	var data map[string]interface{}
+	if err := json.Unmarshal([]byte(resp.Body), &data); err != nil {
+		fmt.Println("Error decoding JSON response:", err)
+		panic(err)
+	}
+
+	secret, err := utils.ExtractSecret(data)
+	if err != nil {
+		fmt.Println("Error extracting secret:", err)
+		panic(err)
+	}
+	r.ctx.Secret = secret
+
+	answerJson, ok := data["answer"].(map[string]interface{})
+	if !ok {
+		err := errors.New("failed to decode answer JSON")
+		panic(err)
+	}
+	wasCorrect, ok := answerJson["correct"].(bool)
+	if !ok {
+		err := errors.New("failed to decode wasCorrect JSON")
+		panic(err)
+	}
+	targetWord, ok := answerJson["word"].(string)
+	if !ok {
+		err := errors.New("failed to decode target word JSON")
+		panic(err)
+	}
+
+	r.ctx.Secret = secret
+
+	r.ctx.CurrentQuestion.Answer = answer.Value
+	r.ctx.CurrentQuestion.AnswerKey = answer.Key
+	r.ctx.CurrentQuestion.TargetWord = targetWord
+	r.ctx.CurrentQuestion.IsCorrect = wasCorrect
+	r.ctx.PointsEarned = answerJson["points"].(int) + answerJson["bonus"].(int)
+
+	r.SaveQuestionToDB(r.ctx.CurrentQuestion)
+	// if progrress in data["game"]["progress"] == 1, then start a new list
+}
+
+func (r *Runner) NextQuestion() model.Question {
+	// To be called after answerQuestion()
+	NEXT_QUESTION_URI := "https://www.vocabulary.com/challenge/nextquestion.json"
+	// Send request, update secret, get next question after this method.
+	requestPayload := model.NextQuestionReq{
+		Secret: r.ctx.Secret,
+		V:      3,
+	}
+
+	// Set body
+	body, err := json.Marshal(requestPayload)
+	if err != nil {
+		fmt.Println("Error marshaling JSON:", err)
+		panic(err)
+	}
+	r.clientOptions.Body = string(body)
+
+	fmt.Println("Fetching next question...")
+	resp, err := r.client.Do(NEXT_QUESTION_URI, r.clientOptions, "POST")
+	if err != nil {
+		fmt.Println("Error making HTTP request:", err)
+		panic(err)
+	}
+
+	// Parse the JSON response
+	var data map[string]interface{}
+	if err := json.Unmarshal([]byte(resp.Body), &data); err != nil {
+		fmt.Println("Error decoding JSON response:", err)
+		panic(err)
+	}
+
+	secret, err := utils.ExtractSecret(data)
+	if err != nil {
+		fmt.Println("Error extracting secret:", err)
+		panic(err)
+	}
+	r.ctx.Secret = secret
+
+	question, _, _ := utils.ExtractQuestion(data)
+	r.ctx.CurrentQuestion = *question
+	r.SaveQuestionToDB(*question)
+
+	return *question
+}
+
+func (r *Runner) Practice() {
+	for {
+		// Start, then ask llm, then answer, then next question.
+
+		// Then do loop
 	}
 }

@@ -62,7 +62,9 @@ func ExtractQuestion(data map[string]interface{}) (*model.Question, string, erro
 	question.Question = stripExtraWhiteSpace(questionContent.Text())
 
 	if question.QuestionType == "T" {
-		question.Answer = doc.Find("div.complete strong").First().Text()
+		spellingQuestionAnswer := doc.Find("div.complete strong").First().Text()
+		question.Answer = spellingQuestionAnswer
+		question.AnswerKey = spellingQuestionAnswer
 	}
 
 	var choices []model.QuestionChoices
@@ -104,4 +106,13 @@ func PrettyPrint(v interface{}) {
 
 	// Convert the byte slice to a string and print it
 	fmt.Println(string(jsonBytes))
+}
+
+func ExtractSecret(data map[string]interface{}) (string, error) {
+	secret, ok := data["secret"].(string)
+	if !ok {
+		err := errors.New("error decoding secret")
+		return "", err
+	}
+	return secret, nil
 }
