@@ -5,7 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math"
+	"math/rand"
 	"strings"
+	"time"
 
 	"github.com/Danny-Dasilva/CycleTLS/cycletls"
 	"github.com/PuerkitoBio/goquery"
@@ -23,27 +26,30 @@ func GetCookiesString(cookies []cycletls.Cookie) (string, error) {
 	return "", errors.New("no cookies found")
 }
 
-func ExtractQuestion(data map[string]interface{}) (*model.Question, string, error) {
+func ExtractQuestion(data map[string]interface{}) (model.Question, string, error) {
 	question := model.Question{}
 	secret, ok := data["secret"].(string)
 	if !ok {
-		return nil, "", errors.New("secret not found")
+		return model.Question{}, "", errors.New("secret not found")
 	}
 
 	questionData, ok := data["question"].(map[string]interface{})
 	if !ok {
-		return nil, "", errors.New("secret not found")
+		fmt.Println("Error getting question data, trying base data JSON instead...")
+		questionData = data
+		question.QuestionType = questionData["qtype"].(string)
+	} else {
+		question.QuestionType = questionData["type"].(string)
 	}
 
 	question.IsCorrect = false
 	question.Code = questionData["code"].(string)
-	question.QuestionType = questionData["type"].(string)
 	question.Difficulty = questionData["difficulty"].(float64)
 
 	decodedQuestion, err := base64.StdEncoding.DecodeString(question.Code)
 	if err != nil {
 		fmt.Println("Error base64 decoding question:", err)
-		return nil, "", err
+		return model.Question{}, "", err
 	}
 	question.DecodedCode = string(decodedQuestion)
 
@@ -51,7 +57,7 @@ func ExtractQuestion(data map[string]interface{}) (*model.Question, string, erro
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(question.DecodedCode))
 	if err != nil {
 		fmt.Println("Error creating HTML doc:", err)
-		return nil, "", err
+		return model.Question{}, "", err
 	}
 
 	questionContext := doc.Find("div.questionContent").First()
@@ -87,7 +93,7 @@ func ExtractQuestion(data map[string]interface{}) (*model.Question, string, erro
 	})
 	question.Choices = choices
 
-	return &question, secret, nil
+	return question, secret, nil
 }
 
 func stripExtraWhiteSpace(str string) string {
@@ -115,4 +121,27 @@ func ExtractSecret(data map[string]interface{}) (string, error) {
 		return "", err
 	}
 	return secret, nil
+}
+
+func ExtractPracticeProgress(data map[string]interface{}) (float64, error) {
+	gameJson, ok := data["game"].(map[string]interface{})
+	if !ok {
+		err := errors.New("failed to decode game JSON")
+		return 0, err
+	}
+	progress, ok := gameJson["progress"].(float64)
+	if !ok {
+		err := errors.New("failed to decode progress JSON")
+		return 0, err
+	}
+	return progress, nil
+}
+
+func GenerateRandomTime() int {
+	source := rand.NewSource(time.Now().UnixNano())
+	r := rand.New(source)
+	randomFloat := 3 + r.Float64()*(7-3)
+	roundedFloat := math.Round(randomFloat*1000) / 1000
+	result := int(roundedFloat * 1000)
+	return result
 }

@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/Danny-Dasilva/CycleTLS/cycletls"
 	"github.com/jackc/pgx/v4"
@@ -28,6 +29,7 @@ type RunParams struct {
 }
 
 type RunContext struct {
+	ListId                      int
 	OllamaQuery                 string
 	CurrentQuestion             model.Question
 	PointsEarned                int
@@ -94,6 +96,7 @@ func New(params RunParams) *Runner {
 			password: "password",
 		},
 		ctx: &RunContext{
+			ListId:      params.ListId,
 			Cookies:     options.Cookies,
 			OllamaQuery: string(rawQuery),
 		},
@@ -129,7 +132,7 @@ func (r *Runner) IsLoggedIn() bool {
 	}
 
 	loggedIn, ok := auth["loggedin"].(bool)
-	if !ok {
+	if ok {
 		res = loggedIn
 	}
 
@@ -139,7 +142,7 @@ func (r *Runner) IsLoggedIn() bool {
 func (r *Runner) Start(listId int) model.Question {
 	payload := model.StartPracticeReq{
 		V:            3,
-		ActivityType: 'p',
+		ActivityType: "p",
 		WordListId:   listId,
 		Secret:       r.ctx.Secret,
 	}
@@ -179,11 +182,22 @@ func (r *Runner) Start(listId int) model.Question {
 	}
 	r.ctx.Secret = secret
 
-	question, _, _ := utils.ExtractQuestion(data)
-	r.ctx.CurrentQuestion = *question
-	r.SaveQuestionToDB(*question)
+	question, _, err := utils.ExtractQuestion(data)
+	if err != nil {
+		fmt.Println("Error extracting question:", err)
+		panic(err)
+	}
+	r.ctx.CurrentQuestion = question
+	r.SaveQuestionToDB(question)
 
-	return *question
+	progress, err := utils.ExtractPracticeProgress(data)
+	if err != nil {
+		fmt.Println("Error extracting progress:", err)
+		// panic(err)
+	}
+	r.ctx.CurrentCompletionPercentage = progress
+
+	return question
 }
 
 // Initializes db connection, and creates required tables.
@@ -353,7 +367,7 @@ func (r *Runner) AnswerQuestion(answer model.QuestionChoices) {
 	requestPayload := model.AnswerReq{
 		Secret: r.ctx.Secret,
 		V:      3,
-		Rt:     0, // Need to be timer between
+		Rt:     utils.GenerateRandomTime(),
 		A:      answer.Key,
 	}
 
@@ -378,6 +392,19 @@ func (r *Runner) AnswerQuestion(answer model.QuestionChoices) {
 	if err := json.Unmarshal([]byte(resp.Body), &data); err != nil {
 		fmt.Println("Error decoding JSON response:", err)
 		panic(err)
+	}
+	if resp.Status == 400 {
+		fmt.Println("Error response to HTTP request:", data)
+		errorValue, ok := data["error"].(string)
+		if !ok {
+			err := errors.New("failed to decode error JSON")
+			panic(err)
+		}
+
+		if errorValue == "RestartChallengeException" {
+			fmt.Println("Restarting challenge...")
+			// Restart challenge...
+		}
 	}
 
 	secret, err := utils.ExtractSecret(data)
@@ -412,13 +439,18 @@ func (r *Runner) AnswerQuestion(answer model.QuestionChoices) {
 	r.ctx.PointsEarned = answerJson["points"].(int) + answerJson["bonus"].(int)
 
 	r.SaveQuestionToDB(r.ctx.CurrentQuestion)
-	// if progrress in data["game"]["progress"] == 1, then start a new list
+
+	progress, err := utils.ExtractPracticeProgress(data)
+	if err != nil {
+		fmt.Println("Error extracting progress:", err)
+		panic(err)
+	}
+	r.ctx.CurrentCompletionPercentage = progress
 }
 
 func (r *Runner) NextQuestion() model.Question {
 	// To be called after answerQuestion()
 	NEXT_QUESTION_URI := "https://www.vocabulary.com/challenge/nextquestion.json"
-	// Send request, update secret, get next question after this method.
 	requestPayload := model.NextQuestionReq{
 		Secret: r.ctx.Secret,
 		V:      3,
@@ -454,16 +486,31 @@ func (r *Runner) NextQuestion() model.Question {
 	r.ctx.Secret = secret
 
 	question, _, _ := utils.ExtractQuestion(data)
-	r.ctx.CurrentQuestion = *question
-	r.SaveQuestionToDB(*question)
+	r.ctx.CurrentQuestion = question
+	r.SaveQuestionToDB(question)
 
-	return *question
+	progress, err := utils.ExtractPracticeProgress(data)
+	if err != nil {
+		fmt.Println("Error extracting progress:", err)
+		panic(err)
+	}
+	r.ctx.CurrentCompletionPercentage = progress
+
+	return question
 }
 
 func (r *Runner) Practice() {
+	question := r.Start(r.ctx.ListId)
 	for {
-		// Start, then ask llm, then answer, then next question.
+		choices := r.Ask(question)
 
-		// Then do loop
+		time.Sleep(1 * time.Second)
+		r.AnswerQuestion(choices)
+
+		time.Sleep(1 * time.Second)
+		question = r.NextQuestion()
+
+		fmt.Println("Sleeping for 3 seconds...")
+		time.Sleep(3 * time.Second)
 	}
 }

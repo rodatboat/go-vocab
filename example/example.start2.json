@@ -1,0 +1,57 @@
+{
+    "adata": "-",
+    "auth": {
+      "loggedin": true,
+      "nickname": "Carl T.",
+      "role": null,
+      "school": {
+        "_id": {
+          "$oid": "-"
+        },
+        "cn": "-",
+        "ct": "-",
+        "dmdrid": -1,
+        "mdrid": -1,
+        "n": "-",
+        "st": "-",
+        "zp": "-"
+      },
+      "uid": "-"
+    },
+    "cmd": "newround",
+    "code": "+DQo8ZGl2IGNsYXNzPSJzbGlkZXIiPg0KPHNlY3Rpb24gY2xhc3M9ImxlZnQiPg0KPGRpdiBjbGFzcz0icXVlc3Rpb24gdHlwZVMiIGRhdGEtdGVtcGxhdGU9Im11bHRpcGxlLWNob2ljZSI+DQoJDQoNCg0KDQoNCg0KDQoNCg0KDQoNCg0KDQoJPGRpdiBjbGFzcz0ibW9kZSI+DQoJDQoJCQ0KCQkNCgkJDQoJCTxzcGFuIGNsYXNzPSJyZXZpZXciPlJFVklFVzwvc3Bhbj4NCgkJDQoJOiA8c3BhbiBjbGFzcz0icG9pbnRWYWx1ZSI+MTA8L3NwYW4+IFBPSU5UUzwvZGl2Pg0KDQoNCjxkaXYgY2xhc3M9InF1ZXN0aW9uQ29udGVudCI+DQoJDQo8L2Rpdj4NCg0KPGRpdiBjbGFzcz0iaW5zdHJ1Y3Rpb25zIj4NCgkNCgkJDQoJCQ0KCQkNCgkJCTxzdHJvbmc+Zm91bmRlcjwvc3Ryb25nPiBoYXMgdGhlIHNhbWUgb3IgYWxtb3N0IHRoZSBzYW1lIG1lYW5pbmcgYXM6DQoJCQ0KCQkNCgkJDQoJCQ0KCQkNCgkJDQoJDQo8L2Rpdj4NCg0KDQoJPGRpdiBjbGFzcz0iY2hvaWNlcyI+DQoJCQ0KCQkJDQoJCQkNCgkJCQkNCgkJCQkNCgkJCQkJPGEgaHJlZj0iIyIgYWNjZXNza2V5PSIxQSIgZGF0YS1ub25jZT0iejI1bTl5IiANCgkJCQkJCT5rZWVwIGdvaW5nDQoJCQkJCSAJIDxkaXYgY2xhc3M9InRvb2xzIj48c3BhbiByb2xlPSJidXR0b24iIHdvcmQ9ImtlZXAgZ29pbmciIGNsYXNzPSJsb29rdXAiPjwvc3Bhbj48L2Rpdj4NCgkJCQkJPC9hPg0KCQkJCQ0KCQkJCQk8YSBocmVmPSIjIiBhY2Nlc3NrZXk9IjJCIiBkYXRhLW5vbmNlPSI2YmEwanIiIA0KCQkJCQkJPmdldCBhaGVhZA0KCQkJCQkgCSA8ZGl2IGNsYXNzPSJ0b29scyI+PHNwYW4gcm9sZT0iYnV0dG9uIiB3b3JkPSJnZXQgYWhlYWQiIGNsYXNzPSJsb29rdXAiPjwvc3Bhbj48L2Rpdj4NCgkJCQkJPC9hPg0KCQkJCQ0KCQkJCQk8YSBocmVmPSIjIiBhY2Nlc3NrZXk9IjNDIiBkYXRhLW5vbmNlPSJ5dW5lMTAiIA0KCQkJCQkJPmNhdmUgaW4NCgkJCQkJIAkgPGRpdiBjbGFzcz0idG9vbHMiPjxzcGFuIHJvbGU9ImJ1dHRvbiIgd29yZD0iY2F2ZSBpbiIgY2xhc3M9Imxvb2t1cCI+PC9zcGFuPjwvZGl2Pg0KCQkJCQk8L2E+DQoJCQkJDQoJCQkJCTxhIGhyZWY9IiMiIGFjY2Vzc2tleT0iNEQiIGRhdGEtbm9uY2U9ImZzNmpjcCIgDQoJCQkJCQk+c2VlIHRoZSBsaWdodA0KCQkJCQkgCSA8ZGl2IGNsYXNzPSJ0b29scyI+PHNwYW4gcm9sZT0iYnV0dG9uIiB3b3JkPSJzZWUgdGhlIGxpZ2h0IiBjbGFzcz0ibG9va3VwIj48L3NwYW4+PC9kaXY+DQoJCQkJCTwvYT4NCgkJCQkNCgkJCQ0KCQkNCgk8L2Rpdj4NCg0KDQoNCgk8ZGl2IGNsYXNzPSJsaWZlTGluZXMiIHN0eWxlPSJkaXNwbGF5Om5vbmU7IiA+DQoJCQ0KCQkJIDxzcGFuIGNsYXNzPSJsYWJlbCI+Tm90IHN1cmU/IEdldCBhIGhpbnQ6PC9zcGFuPg0KCQkJIDxzcGFuIHN0eWxlPSJ3aGl0ZS1zcGFjZTogbm93cmFwOyI+PGEgZGF0YS10eXBlPSJGIiBjbGFzcz0iZmlmdHlmaWZ0eSIgdGl0bGU9IldlJ2xsIGVsaW1pbmF0ZSB0d28gY2hvaWNlcyBmb3IgeW91LiIgaHJlZj0iamF2YXNjcmlwdDp2b2lkKDApOyI+NTAvNTA8L2E+DQoJCQkgCTxhIGRhdGEtdHlwZT0iRSIgY2xhc3M9ImludGhld2lsZCIgdGl0bGU9IlNlZSBleGFtcGxlcyBvZiB0aGlzIHdvcmQgdXNlZCBpbiBjb250ZXh0LiIgaHJlZj0iamF2YXNjcmlwdDp2b2lkKDApOyI+V29yZCBpbiB0aGUgV2lsZDwvYT4NCgkJCSAJPGEgZGF0YS10eXBlPSJEIiBjbGFzcz0ic2VlZGVmIiB0aXRsZT0iU2VlIHRoZSBkZWZpbml0aW9uIG9mIHRoaXMgd29yZCIgaHJlZj0iamF2YXNjcmlwdDp2b2lkKDApOyI+RGVmaW5pdGlvbjwvYT4NCgkJCSA8L3NwYW4+DQoJCSANCgkgPC9kaXY+DQoJPGRpdiBjbGFzcz0ibGlmZUxpbmVDb250ZW50IiBzdHlsZT0iZGlzcGxheTpub25lOyIgPjwvZGl2PgkJDQoNCg0KDQo8L2Rpdj4NCjxkaXYgY2xhc3M9InN0YXR1cyI+PC9kaXY+DQo8ZGl2IGNsYXNzPSJkZWYiPjwvZGl2Pg0KPC9zZWN0aW9uPg0KDQo8c2VjdGlvbiBjbGFzcz0icmlnaHQgYmx1cmItY29udGFpbmVyIj48L3NlY3Rpb24+DQoNCjwvZGl2PjwvZGl2PjwvZGl2Pg==",
+    "difficulty": 4.69,
+    "pdata": {
+      "level": {
+        "id": "L1",
+        "name": "-"
+      },
+      "lists": [
+        {
+          "current": false,
+          "listId": -1,
+          "name": "-",
+          "priority": 0,
+          "progress": 1,
+          "wordcount": 25
+        },
+        {
+          "current": false,
+          "listId": -1,
+          "name": "-",
+          "priority": 1,
+          "progress": 1,
+          "wordcount": 13
+        }
+      ],
+      "nummastered": -1,
+      "numplayed": -1,
+      "points": -1,
+      "rn": 0,
+      "round": []
+    },
+    "qtype": "S",
+    "secret": "-",
+    "v": 0,
+    "valid": true
+  }

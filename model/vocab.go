@@ -43,7 +43,7 @@ type NextQuestionReq struct {
 
 type StartPracticeReq struct {
 	V            int    `json:"v"`
-	ActivityType byte   `json:"activitytype"`
+	ActivityType string `json:"activitytype"`
 	WordListId   int    `json:"wordlistid"`
 	Secret       string `json:"secret,omitempty"`
 }
