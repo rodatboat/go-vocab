@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
+	"net/http"
 	"strings"
 	"time"
 
@@ -26,11 +27,11 @@ func GetCookiesString(cookies []cycletls.Cookie) (string, error) {
 	return "", errors.New("no cookies found")
 }
 
-func ExtractQuestion(data map[string]interface{}) (model.Question, string, error) {
+func ExtractQuestion(data map[string]interface{}) (*model.Question, string, error) {
 	question := model.Question{}
 	secret, ok := data["secret"].(string)
 	if !ok {
-		return model.Question{}, "", errors.New("secret not found")
+		return nil, "", errors.New("secret not found")
 	}
 
 	questionData, ok := data["question"].(map[string]interface{})
@@ -49,7 +50,7 @@ func ExtractQuestion(data map[string]interface{}) (model.Question, string, error
 	decodedQuestion, err := base64.StdEncoding.DecodeString(question.Code)
 	if err != nil {
 		fmt.Println("Error base64 decoding question:", err)
-		return model.Question{}, "", err
+		return nil, "", err
 	}
 	question.DecodedCode = string(decodedQuestion)
 
@@ -57,7 +58,7 @@ func ExtractQuestion(data map[string]interface{}) (model.Question, string, error
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(question.DecodedCode))
 	if err != nil {
 		fmt.Println("Error creating HTML doc:", err)
-		return model.Question{}, "", err
+		return nil, "", err
 	}
 
 	questionContext := doc.Find("div.questionContent").First()
@@ -93,7 +94,7 @@ func ExtractQuestion(data map[string]interface{}) (model.Question, string, error
 	})
 	question.Choices = choices
 
-	return question, secret, nil
+	return &question, secret, nil
 }
 
 func stripExtraWhiteSpace(str string) string {
@@ -123,18 +124,18 @@ func ExtractSecret(data map[string]interface{}) (string, error) {
 	return secret, nil
 }
 
-func ExtractPracticeProgress(data map[string]interface{}) (float64, error) {
+func ExtractPracticeProgress(data map[string]interface{}) (*float64, error) {
 	gameJson, ok := data["game"].(map[string]interface{})
 	if !ok {
 		err := errors.New("failed to decode game JSON")
-		return 0, err
+		return nil, err
 	}
 	progress, ok := gameJson["progress"].(float64)
 	if !ok {
 		err := errors.New("failed to decode progress JSON")
-		return 0, err
+		return nil, err
 	}
-	return progress, nil
+	return &progress, nil
 }
 
 func GenerateRandomTime() int {
@@ -144,4 +145,28 @@ func GenerateRandomTime() int {
 	roundedFloat := math.Round(randomFloat*1000) / 1000
 	result := int(roundedFloat * 1000)
 	return result
+}
+
+func RetrieveCookies(cookies []*http.Cookie, existingCookies []cycletls.Cookie) []cycletls.Cookie {
+	newCookies := make([]cycletls.Cookie, 0, len(cookies))
+	for _, cookie := range cookies {
+		newCookies = append(newCookies, cycletls.Cookie{Name: cookie.Name, Value: cookie.Value})
+	}
+
+	for _, cookie := range existingCookies {
+		if !cookieExists(cookie, newCookies) {
+			newCookies = append(newCookies, cookie)
+		}
+	}
+
+	return newCookies
+}
+
+func cookieExists(cookie cycletls.Cookie, cookieList []cycletls.Cookie) bool {
+	for _, c := range cookieList {
+		if c.Name == cookie.Name {
+			return true
+		}
+	}
+	return false
 }

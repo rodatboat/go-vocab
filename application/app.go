@@ -31,7 +31,7 @@ type RunParams struct {
 type RunContext struct {
 	ListId                      int
 	OllamaQuery                 string
-	CurrentQuestion             model.Question
+	CurrentQuestion             *model.Question
 	PointsEarned                int
 	Secret                      string
 	ErrorCount                  int
@@ -75,10 +75,12 @@ func New(params RunParams) *Runner {
 		panic(err)
 	}
 
+	userAgent := "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 OPR/115.0.0.0"
 	options := cycletls.Options{
 		Ja3:       params.Ja3,
-		UserAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 OPR/115.0.0.0",
+		UserAgent: userAgent,
 		Headers: map[string]string{
+			"User-Agent":       userAgent,
 			"Origin":           "https://www.vocabulary.com",
 			"X-Requested-With": "XMLHttpRequest",
 			"Content-Type":     "application/x-www-form-urlencoded; charset=UTF-8",
@@ -139,23 +141,25 @@ func (r *Runner) IsLoggedIn() bool {
 	return res
 }
 
-func (r *Runner) Start(listId int) model.Question {
+func (r *Runner) Start(listId int) *model.Question {
 	payload := model.StartPracticeReq{
 		V:            3,
 		ActivityType: "p",
 		WordListId:   listId,
-		Secret:       r.ctx.Secret,
 	}
 
-	if payload.Secret == "" {
-		fmt.Println("Secret is empty, starting new ")
+	if r.ctx.Secret != "" {
+		payload.Secret = r.ctx.Secret
+		fmt.Println("Secret is not empty, continue from where we left off...")
+	} else {
+		r.ctx.CurrentCompletionPercentage = 0
 	}
 
 	// Set body
 	body, err := json.Marshal(payload)
 	if err != nil {
 		fmt.Println("Error marshaling JSON:", err)
-		panic(err)
+		return nil
 	}
 
 	r.clientOptions.Body = string(body)
@@ -165,37 +169,54 @@ func (r *Runner) Start(listId int) model.Question {
 	resp, err := r.client.Do(START_URI, r.clientOptions, "POST")
 	if err != nil {
 		fmt.Println("Error making HTTP request:", err)
-		panic(err)
+		return nil
 	}
 
 	// Parse the JSON response
 	var data map[string]interface{}
 	if err := json.Unmarshal([]byte(resp.Body), &data); err != nil {
 		fmt.Println("Error decoding JSON response:", err)
-		panic(err)
+		return nil
+	}
+
+	r.clientOptions.Cookies = utils.RetrieveCookies(resp.Cookies, r.clientOptions.Cookies)
+	r.clientOptions.Headers["Cookie"], _ = utils.GetCookiesString(r.clientOptions.Cookies)
+	if resp.Status == 400 {
+		fmt.Println("ERROR 400: Bad request. This is likely due to a round over.")
+		fmt.Println(json.Marshal(data))
+		// roundOver, ok := data["error"].(string)
+		// if ok {
+		// 	if roundOver == "RestartChallengeException" {
+		// 		fmt.Println("Encountered RestartChallengeException. Round over.")
+		// 		r.ctx.CurrentCompletionPercentage = 1
+		// 		r.ctx.CurrentQuestion = model.Question{}
+		// 		fmt.Println("Restarting challenge...")
+		// 		return
+		// 	}
+		// }
 	}
 
 	secret, err := utils.ExtractSecret(data)
 	if err != nil {
 		fmt.Println("Error extracting secret:", err)
-		panic(err)
+		return nil
 	}
 	r.ctx.Secret = secret
 
 	question, _, err := utils.ExtractQuestion(data)
 	if err != nil {
 		fmt.Println("Error extracting question:", err)
-		panic(err)
+		return nil
 	}
 	r.ctx.CurrentQuestion = question
-	r.SaveQuestionToDB(question)
+	r.SaveQuestionToDB(*question)
 
 	progress, err := utils.ExtractPracticeProgress(data)
 	if err != nil {
-		fmt.Println("Error extracting progress:", err)
-		// panic(err)
+		fmt.Println("Error extracting progress, skipping...")
+	} else {
+		r.ctx.CurrentCompletionPercentage = *progress
 	}
-	r.ctx.CurrentCompletionPercentage = progress
 
 	return question
 }
@@ -355,6 +376,8 @@ func (r *Runner) Ask(question model.Question) model.QuestionChoices {
 		panic(err)
 	}
 
+	r.ctx.CurrentQuestion.Answer = answer
+	r.ctx.CurrentQuestion.AnswerKey = code
 	return model.QuestionChoices{
 		Key:   code,
 		Value: answer,
@@ -393,17 +416,19 @@ func (r *Runner) AnswerQuestion(answer model.QuestionChoices) {
 		fmt.Println("Error decoding JSON response:", err)
 		panic(err)
 	}
-	if resp.Status == 400 {
-		fmt.Println("Error response to HTTP request:", data)
-		errorValue, ok := data["error"].(string)
-		if !ok {
-			err := errors.New("failed to decode error JSON")
-			panic(err)
-		}
 
-		if errorValue == "RestartChallengeException" {
-			fmt.Println("Restarting challenge...")
-			// Restart challenge...
+	r.clientOptions.Cookies = utils.RetrieveCookies(resp.Cookies, r.clientOptions.Cookies)
+	r.clientOptions.Headers["Cookie"], _ = utils.GetCookiesString(r.clientOptions.Cookies)
+	if resp.Status == 400 {
+		roundOver, ok := data["error"].(string)
+		if ok {
+			if roundOver == "RestartChallengeException" {
+				fmt.Println("Encountered RestartChallengeException. Round over.")
+				r.ctx.CurrentCompletionPercentage = 1
+				r.ctx.CurrentQuestion = &model.Question{}
+				fmt.Println("Restarting challenge...", requestPayload, string(resp.Body))
+				return
+			}
 		}
 	}
 
@@ -438,17 +463,17 @@ func (r *Runner) AnswerQuestion(answer model.QuestionChoices) {
 	r.ctx.CurrentQuestion.IsCorrect = wasCorrect
 	r.ctx.PointsEarned = answerJson["points"].(int) + answerJson["bonus"].(int)
 
-	r.SaveQuestionToDB(r.ctx.CurrentQuestion)
+	r.SaveQuestionToDB(*r.ctx.CurrentQuestion)
 
 	progress, err := utils.ExtractPracticeProgress(data)
 	if err != nil {
 		fmt.Println("Error extracting progress:", err)
 		panic(err)
 	}
-	r.ctx.CurrentCompletionPercentage = progress
+	r.ctx.CurrentCompletionPercentage = *progress
 }
 
-func (r *Runner) NextQuestion() model.Question {
+func (r *Runner) NextQuestion() *model.Question {
 	// To be called after answerQuestion()
 	NEXT_QUESTION_URI := "https://www.vocabulary.com/challenge/nextquestion.json"
 	requestPayload := model.NextQuestionReq{
@@ -478,37 +503,49 @@ func (r *Runner) NextQuestion() model.Question {
 		panic(err)
 	}
 
+	r.clientOptions.Cookies = utils.RetrieveCookies(resp.Cookies, r.clientOptions.Cookies)
+	r.clientOptions.Headers["Cookie"], _ = utils.GetCookiesString(r.clientOptions.Cookies)
 	secret, err := utils.ExtractSecret(data)
 	if err != nil {
 		fmt.Println("Error extracting secret:", err)
 		panic(err)
+	} else {
+		r.ctx.Secret = secret
 	}
-	r.ctx.Secret = secret
 
 	question, _, _ := utils.ExtractQuestion(data)
 	r.ctx.CurrentQuestion = question
-	r.SaveQuestionToDB(question)
+	r.SaveQuestionToDB(*question)
 
 	progress, err := utils.ExtractPracticeProgress(data)
 	if err != nil {
-		fmt.Println("Error extracting progress:", err)
-		panic(err)
+		fmt.Println("Error extracting progress, skipping...")
+	} else {
+		r.ctx.CurrentCompletionPercentage = *progress
 	}
-	r.ctx.CurrentCompletionPercentage = progress
 
 	return question
 }
 
 func (r *Runner) Practice() {
-	question := r.Start(r.ctx.ListId)
+	r.ctx.CurrentQuestion = r.Start(r.ctx.ListId)
 	for {
-		choices := r.Ask(question)
+		answer := r.Ask(*r.ctx.CurrentQuestion)
 
-		time.Sleep(1 * time.Second)
-		r.AnswerQuestion(choices)
+		time.Sleep(3 * time.Second)
+		r.AnswerQuestion(answer)
 
-		time.Sleep(1 * time.Second)
-		question = r.NextQuestion()
+		if r.ctx.CurrentCompletionPercentage == 1 {
+			fmt.Println("Round over. Restarting challenge...")
+			r.ctx.Secret = ""
+			r.ctx.CurrentQuestion = r.Start(r.ctx.ListId)
+
+			time.Sleep(3 * time.Second)
+			r.AnswerQuestion(answer)
+		}
+
+		time.Sleep(3 * time.Second)
+		r.ctx.CurrentQuestion = r.NextQuestion()
 
 		fmt.Println("Sleeping for 3 seconds...")
 		time.Sleep(3 * time.Second)
