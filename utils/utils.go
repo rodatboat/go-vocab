@@ -22,6 +22,7 @@ func GetCookiesString(cookies []cycletls.Cookie) (string, error) {
 		for _, cookie := range cookies {
 			cookieHeader += cookie.Name + "=" + cookie.Value + ";"
 		}
+		fmt.Println("Cookie header:", cookieHeader)
 		return cookieHeader, nil
 	}
 	return "", errors.New("no cookies found")
@@ -29,9 +30,10 @@ func GetCookiesString(cookies []cycletls.Cookie) (string, error) {
 
 func ExtractQuestion(data map[string]interface{}) (*model.Question, string, error) {
 	question := model.Question{}
-	secret, ok := data["secret"].(string)
-	if !ok {
-		return nil, "", errors.New("secret not found")
+	secret, err := ExtractSecret(data)
+	if err != nil {
+		fmt.Println("Error extracting secret:", err)
+		panic(err)
 	}
 
 	questionData, ok := data["question"].(map[string]interface{})
@@ -121,6 +123,8 @@ func ExtractSecret(data map[string]interface{}) (string, error) {
 		err := errors.New("error decoding secret")
 		return "", err
 	}
+
+	// Store in progress, then load on startup
 	return secret, nil
 }
 
@@ -141,30 +145,49 @@ func ExtractPracticeProgress(data map[string]interface{}) (*float64, error) {
 func GenerateRandomTime() int {
 	source := rand.NewSource(time.Now().UnixNano())
 	r := rand.New(source)
-	randomFloat := 3 + r.Float64()*(7-3)
+	randomFloat := 3 + r.Float64()*(9-3)
 	roundedFloat := math.Round(randomFloat*1000) / 1000
 	result := int(roundedFloat * 1000)
 	return result
 }
 
 func RetrieveCookies(cookies []*http.Cookie, existingCookies []cycletls.Cookie) []cycletls.Cookie {
-	newCookies := make([]cycletls.Cookie, 0, len(cookies))
-	for _, cookie := range cookies {
-		newCookies = append(newCookies, cycletls.Cookie{Name: cookie.Name, Value: cookie.Value})
+	var newCookiesMap map[string]cycletls.Cookie = make(map[string]cycletls.Cookie)
+	for _, existingCookie := range existingCookies {
+		newCookiesMap[existingCookie.Name] = existingCookie
 	}
 
-	for _, cookie := range existingCookies {
-		if !cookieExists(cookie, newCookies) {
-			newCookies = append(newCookies, cookie)
+	for _, cookie := range cookies {
+		if isImportantCookie(cookie.Name) {
+			newCookiesMap[cookie.Name] = cycletls.Cookie{
+				Name:       cookie.Name,
+				Value:      cookie.Value,
+				Domain:     cookie.Domain,
+				Path:       cookie.Path,
+				Expires:    cookie.Expires,
+				Secure:     cookie.Secure,
+				RawExpires: cookie.RawExpires,
+				MaxAge:     cookie.MaxAge,
+				HTTPOnly:   cookie.HttpOnly,
+				SameSite:   cookie.SameSite,
+				Raw:        cookie.Raw,
+				Unparsed:   cookie.Unparsed,
+			}
 		}
+	}
+
+	newCookies := make([]cycletls.Cookie, 0, len(cookies))
+	for _, cookie := range newCookiesMap {
+		newCookies = append(newCookies, cookie)
 	}
 
 	return newCookies
 }
 
-func cookieExists(cookie cycletls.Cookie, cookieList []cycletls.Cookie) bool {
-	for _, c := range cookieList {
-		if c.Name == cookie.Name {
+func isImportantCookie(cookie_name string) bool {
+	IMPORTANT_COOKIES := []string{"AWSALB", "AWSALBCORS", "JSESSIONID", "guid", "__cf_bm"}
+	for _, cookie := range IMPORTANT_COOKIES {
+		if cookie == cookie_name {
 			return true
 		}
 	}

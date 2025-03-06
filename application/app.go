@@ -18,6 +18,10 @@ import (
 	"github.com/rodatboat/go-vocab/utils"
 )
 
+const CONTENT_TYPE_HEADER = "Content-Type"
+const CONTENT_TYPE_URL_ENCODED = "application/x-www-form-urlencoded; charset=UTF-8"
+const CONTENT_TYPE_JSON = "application/json; charset=UTF-8"
+
 type RunParams struct {
 	ListId int
 
@@ -75,7 +79,7 @@ func New(params RunParams) *Runner {
 		panic(err)
 	}
 
-	userAgent := "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 OPR/115.0.0.0"
+	userAgent := "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36 OPR/117.0.0.0"
 	options := cycletls.Options{
 		Ja3:       params.Ja3,
 		UserAgent: userAgent,
@@ -83,7 +87,7 @@ func New(params RunParams) *Runner {
 			"User-Agent":       userAgent,
 			"Origin":           "https://www.vocabulary.com",
 			"X-Requested-With": "XMLHttpRequest",
-			"Content-Type":     "application/x-www-form-urlencoded; charset=UTF-8",
+			"Content-Type":     CONTENT_TYPE_URL_ENCODED,
 			"Cookie":           cookieHeader,
 		},
 		Cookies: cookies,
@@ -121,13 +125,7 @@ func (r *Runner) IsLoggedIn() bool {
 		res = false
 	}
 
-	// Parse the JSON response
-	var data map[string]interface{}
-	if err := json.Unmarshal([]byte(resp.Body), &data); err != nil {
-		fmt.Println("Error decoding JSON response:", err)
-		res = false
-	}
-
+	data := resp.JSONBody()
 	auth, ok := data["auth"].(map[string]interface{})
 	if !ok {
 		res = false
@@ -142,6 +140,8 @@ func (r *Runner) IsLoggedIn() bool {
 }
 
 func (r *Runner) Start(listId int) *model.Question {
+	START_URI := "https://www.vocabulary.com/challenge/start.json"
+
 	payload := model.StartPracticeReq{
 		V:            3,
 		ActivityType: "p",
@@ -161,9 +161,8 @@ func (r *Runner) Start(listId int) *model.Question {
 		fmt.Println("Error marshaling JSON:", err)
 		return nil
 	}
-
 	r.clientOptions.Body = string(body)
-	START_URI := "https://www.vocabulary.com/challenge/start.json"
+	r.clientOptions.Headers["Content-Type"] = CONTENT_TYPE_JSON
 
 	fmt.Println("Starting practice session...")
 	resp, err := r.client.Do(START_URI, r.clientOptions, "POST")
@@ -173,27 +172,19 @@ func (r *Runner) Start(listId int) *model.Question {
 	}
 
 	// Parse the JSON response
-	var data map[string]interface{}
-	if err := json.Unmarshal([]byte(resp.Body), &data); err != nil {
-		fmt.Println("Error decoding JSON response:", err)
-		return nil
-	}
-
+	data := resp.JSONBody()
 	r.clientOptions.Cookies = utils.RetrieveCookies(resp.Cookies, r.clientOptions.Cookies)
 	r.clientOptions.Headers["Cookie"], _ = utils.GetCookiesString(r.clientOptions.Cookies)
 	if resp.Status == 400 {
-		fmt.Println("ERROR 400: Bad request. This is likely due to a round over.")
-		fmt.Println(json.Marshal(data))
-		// roundOver, ok := data["error"].(string)
-		// if ok {
-		// 	if roundOver == "RestartChallengeException" {
-		// 		fmt.Println("Encountered RestartChallengeException. Round over.")
-		// 		r.ctx.CurrentCompletionPercentage = 1
-		// 		r.ctx.CurrentQuestion = model.Question{}
-		// 		fmt.Println("Restarting challenge...")
-		// 		return
-		// 	}
-		// }
+		roundOver, ok := data["error"].(string)
+		if ok {
+			if roundOver == "RestartChallengeException" {
+				fmt.Println("Encountered RestartChallengeException. Round over.")
+				r.ctx.CurrentCompletionPercentage = 1
+				r.ctx.CurrentQuestion = nil
+				return nil
+			}
+		}
 	}
 
 	secret, err := utils.ExtractSecret(data)
@@ -400,8 +391,8 @@ func (r *Runner) AnswerQuestion(answer model.QuestionChoices) {
 		fmt.Println("Error marshaling JSON:", err)
 		panic(err)
 	}
-
 	r.clientOptions.Body = string(body)
+	r.clientOptions.Headers["Content-Type"] = CONTENT_TYPE_URL_ENCODED
 
 	fmt.Println("Answering question...")
 	resp, err := r.client.Do(SAVE_ANSWER_URI, r.clientOptions, "POST")
@@ -411,12 +402,7 @@ func (r *Runner) AnswerQuestion(answer model.QuestionChoices) {
 	}
 
 	// Parse the JSON response
-	var data map[string]interface{}
-	if err := json.Unmarshal([]byte(resp.Body), &data); err != nil {
-		fmt.Println("Error decoding JSON response:", err)
-		panic(err)
-	}
-
+	data := resp.JSONBody()
 	r.clientOptions.Cookies = utils.RetrieveCookies(resp.Cookies, r.clientOptions.Cookies)
 	r.clientOptions.Headers["Cookie"], _ = utils.GetCookiesString(r.clientOptions.Cookies)
 	if resp.Status == 400 {
@@ -426,7 +412,6 @@ func (r *Runner) AnswerQuestion(answer model.QuestionChoices) {
 				fmt.Println("Encountered RestartChallengeException. Round over.")
 				r.ctx.CurrentCompletionPercentage = 1
 				r.ctx.CurrentQuestion = &model.Question{}
-				fmt.Println("Restarting challenge...", requestPayload, string(resp.Body))
 				return
 			}
 		}
@@ -488,6 +473,7 @@ func (r *Runner) NextQuestion() *model.Question {
 		panic(err)
 	}
 	r.clientOptions.Body = string(body)
+	r.clientOptions.Headers["Content-Type"] = CONTENT_TYPE_URL_ENCODED
 
 	fmt.Println("Fetching next question...")
 	resp, err := r.client.Do(NEXT_QUESTION_URI, r.clientOptions, "POST")
@@ -497,12 +483,7 @@ func (r *Runner) NextQuestion() *model.Question {
 	}
 
 	// Parse the JSON response
-	var data map[string]interface{}
-	if err := json.Unmarshal([]byte(resp.Body), &data); err != nil {
-		fmt.Println("Error decoding JSON response:", err)
-		panic(err)
-	}
-
+	data := resp.JSONBody()
 	r.clientOptions.Cookies = utils.RetrieveCookies(resp.Cookies, r.clientOptions.Cookies)
 	r.clientOptions.Headers["Cookie"], _ = utils.GetCookiesString(r.clientOptions.Cookies)
 	secret, err := utils.ExtractSecret(data)
@@ -528,7 +509,8 @@ func (r *Runner) NextQuestion() *model.Question {
 }
 
 func (r *Runner) Practice() {
-	r.ctx.CurrentQuestion = r.Start(r.ctx.ListId)
+	// r.ctx.CurrentQuestion = r.Start(r.ctx.ListId)
+	r.ctx.CurrentQuestion = r.NextQuestion()
 	for {
 		answer := r.Ask(*r.ctx.CurrentQuestion)
 

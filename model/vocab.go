@@ -30,14 +30,14 @@ type WordList struct {
 }
 
 type AnswerReq struct {
-	Secret string `json:"secret"`
+	Secret string `json:"secret,omitempty"`
 	V      int    `json:"v"`
 	Rt     int    `json:"rt"`
 	A      string `json:"a"`
 }
 
 type NextQuestionReq struct {
-	Secret string `json:"secret"`
+	Secret string `json:"secret,omitempty"`
 	V      int    `json:"v"`
 }
 
