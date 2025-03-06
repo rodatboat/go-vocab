@@ -6,6 +6,7 @@ require (
 	github.com/Danny-Dasilva/CycleTLS/cycletls v1.0.26 // indirect
 	github.com/Danny-Dasilva/fhttp v0.0.0-20240217042913-eeeb0b347ce1 // indirect
 	github.com/PuerkitoBio/goquery v1.10.2 // indirect
+	github.com/ajg/form v1.5.1 // indirect
 	github.com/andybalholm/brotli v1.1.0 // indirect
 	github.com/andybalholm/cascadia v1.3.3 // indirect
 	github.com/cloudflare/circl v1.3.7 // indirect

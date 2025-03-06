@@ -12,6 +12,8 @@ import (
 	"strings"
 	"time"
 
+	ajg "github.com/ajg/form"
+
 	"github.com/Danny-Dasilva/CycleTLS/cycletls"
 	"github.com/jackc/pgx/v4"
 	"github.com/rodatboat/go-vocab/model"
@@ -81,8 +83,7 @@ func New(params RunParams) *Runner {
 
 	userAgent := "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36 OPR/117.0.0.0"
 	options := cycletls.Options{
-		Ja3:       params.Ja3,
-		UserAgent: userAgent,
+		Ja3: params.Ja3,
 		Headers: map[string]string{
 			"User-Agent":       userAgent,
 			"Origin":           "https://www.vocabulary.com",
@@ -142,27 +143,23 @@ func (r *Runner) IsLoggedIn() bool {
 func (r *Runner) Start(listId int) *model.Question {
 	START_URI := "https://www.vocabulary.com/challenge/start.json"
 
-	payload := model.StartPracticeReq{
+	requestPayload := model.StartPracticeReq{
 		V:            3,
 		ActivityType: "p",
 		WordListId:   listId,
 	}
 
 	if r.ctx.Secret != "" {
-		payload.Secret = r.ctx.Secret
+		requestPayload.Secret = r.ctx.Secret
 		fmt.Println("Secret is not empty, continue from where we left off...")
 	} else {
 		r.ctx.CurrentCompletionPercentage = 0
 	}
 
 	// Set body
-	body, err := json.Marshal(payload)
-	if err != nil {
-		fmt.Println("Error marshaling JSON:", err)
-		return nil
-	}
-	r.clientOptions.Body = string(body)
-	r.clientOptions.Headers["Content-Type"] = CONTENT_TYPE_JSON
+	formData, _ := ajg.EncodeToValues(requestPayload)
+	r.clientOptions.Body = formData.Encode()
+	r.clientOptions.Headers["Content-Type"] = CONTENT_TYPE_URL_ENCODED
 
 	fmt.Println("Starting practice session...")
 	resp, err := r.client.Do(START_URI, r.clientOptions, "POST")
@@ -386,12 +383,8 @@ func (r *Runner) AnswerQuestion(answer model.QuestionChoices) {
 	}
 
 	// Set body
-	body, err := json.Marshal(requestPayload)
-	if err != nil {
-		fmt.Println("Error marshaling JSON:", err)
-		panic(err)
-	}
-	r.clientOptions.Body = string(body)
+	formData, _ := ajg.EncodeToValues(requestPayload)
+	r.clientOptions.Body = formData.Encode()
 	r.clientOptions.Headers["Content-Type"] = CONTENT_TYPE_URL_ENCODED
 
 	fmt.Println("Answering question...")
@@ -467,12 +460,8 @@ func (r *Runner) NextQuestion() *model.Question {
 	}
 
 	// Set body
-	body, err := json.Marshal(requestPayload)
-	if err != nil {
-		fmt.Println("Error marshaling JSON:", err)
-		panic(err)
-	}
-	r.clientOptions.Body = string(body)
+	formData, _ := ajg.EncodeToValues(requestPayload)
+	r.clientOptions.Body = formData.Encode()
 	r.clientOptions.Headers["Content-Type"] = CONTENT_TYPE_URL_ENCODED
 
 	fmt.Println("Fetching next question...")
@@ -509,8 +498,8 @@ func (r *Runner) NextQuestion() *model.Question {
 }
 
 func (r *Runner) Practice() {
-	// r.ctx.CurrentQuestion = r.Start(r.ctx.ListId)
-	r.ctx.CurrentQuestion = r.NextQuestion()
+	r.ctx.CurrentQuestion = r.Start(r.ctx.ListId)
+	// r.ctx.CurrentQuestion = r.NextQuestion()
 	for {
 		answer := r.Ask(*r.ctx.CurrentQuestion)
 
