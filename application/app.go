@@ -9,7 +9,6 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 
 	ajg "github.com/ajg/form"
@@ -38,7 +37,7 @@ type RunContext struct {
 	ListId                      int
 	OllamaQuery                 string
 	CurrentQuestion             *model.Question
-	PointsEarned                int
+	PointsEarned                float64
 	Secret                      string
 	ErrorCount                  int
 	CurrentCompletionPercentage float64
@@ -83,7 +82,7 @@ func New(params RunParams) *Runner {
 
 	userAgent := "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36 OPR/117.0.0.0"
 	options := cycletls.Options{
-		Ja3: params.Ja3,
+		// Ja3: params.Ja3,
 		Headers: map[string]string{
 			"User-Agent":       userAgent,
 			"Origin":           "https://www.vocabulary.com",
@@ -91,7 +90,9 @@ func New(params RunParams) *Runner {
 			"Content-Type":     CONTENT_TYPE_URL_ENCODED,
 			"Cookie":           cookieHeader,
 		},
-		Cookies: cookies,
+		Cookies:         cookies,
+		Timeout:         10,
+		DisableRedirect: true,
 	}
 
 	runner := &Runner{
@@ -291,6 +292,8 @@ type OllamaPayload struct {
 }
 
 func (r *Runner) Ask(question model.Question) model.QuestionChoices {
+	// TODO: First check DB for existing answer. If not found, call LLM.
+	// If found, return that answer directly.
 	LLM_URI := "http://localhost:11434/api/generate"
 
 	payload := &OllamaPayload{
@@ -304,7 +307,7 @@ func (r *Runner) Ask(question model.Question) model.QuestionChoices {
 		fmt.Println("Error marshaling JSON:", err)
 		payloadJson = nil
 	}
-	payloadString := strings.ReplaceAll(string(payloadJson), "\"", "\\\"")
+	payloadString := string(payloadJson)
 	query := fmt.Sprintf(r.ctx.OllamaQuery, payloadString)
 
 	req, err := http.NewRequest("POST", LLM_URI, bytes.NewBuffer([]byte(query)))
@@ -439,7 +442,7 @@ func (r *Runner) AnswerQuestion(answer model.QuestionChoices) {
 	r.ctx.CurrentQuestion.AnswerKey = answer.Key
 	r.ctx.CurrentQuestion.TargetWord = targetWord
 	r.ctx.CurrentQuestion.IsCorrect = wasCorrect
-	r.ctx.PointsEarned = answerJson["points"].(int) + answerJson["bonus"].(int)
+	r.ctx.PointsEarned = answerJson["points"].(float64) + answerJson["bonus"].(float64)
 
 	r.SaveQuestionToDB(*r.ctx.CurrentQuestion)
 

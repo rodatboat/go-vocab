@@ -30,22 +30,22 @@ type WordList struct {
 }
 
 type AnswerReq struct {
-	Secret string `json:"secret,omitempty"`
-	V      int    `json:"v"`
-	Rt     int    `json:"rt"`
-	A      string `json:"a"`
+	Secret string `form:"secret" json:"secret,omitempty"`
+	V      int    `form:"v" json:"v"`
+	Rt     int    `form:"rt" json:"rt"`
+	A      string `form:"a" json:"a"`
 }
 
 type NextQuestionReq struct {
-	Secret string `json:"secret,omitempty"`
-	V      int    `json:"v"`
+	Secret string `form:"secret" json:"secret,omitempty"`
+	V      int    `form:"v" json:"v"`
 }
 
 type StartPracticeReq struct {
-	V            int    `json:"v"`
-	ActivityType string `json:"activitytype"`
-	WordListId   int    `json:"wordlistid"`
-	Secret       string `json:"secret,omitempty"`
+	V            int    `form:"v" json:"v"`
+	ActivityType string `form:"activitytype" json:"activitytype"`
+	WordListId   int    `form:"wordlistid" json:"wordlistid"`
+	Secret       string `form:"secret" json:"secret,omitempty"`
 }
 
 type Cookies struct {
