@@ -22,7 +22,6 @@ func GetCookiesString(cookies []cycletls.Cookie) (string, error) {
 		for _, cookie := range cookies {
 			cookieHeader += cookie.Name + "=" + cookie.Value + ";"
 		}
-		fmt.Println("Cookie header:", cookieHeader)
 		return cookieHeader, nil
 	}
 	return "", errors.New("no cookies found")
