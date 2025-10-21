@@ -14,8 +14,8 @@ func main() {
 	runner := application.New(application.RunParams{
 		ListId:     listId,
 		Ja3:        Ja3,
-		AlbCookie:  "T9t25HSzk0QDly14smAk8ylw89D93AaPsdLS8aSrf/fHM+ZdofL7q4DC0oSzTjT06pInbDZHc/l47CrSJAQiUbmuUA+OEkMFd7HxCi9GvO4VqydLtNgcADsgMxJx",
-		JSessionId: "CB67DA933F0F886376138C8A97F0EA06",
+		AlbCookie:  "GTJXq1l+e+m/o+oN/lzWvWAOmfXToOQMkgWeUQFKV7L7r/Tx6JsBOsIkrVQEwdbEkCBa+DJEAMo88ZL1DUbI4v3f9A5hBvA4zW5sjVbRJTbwBHEeLUaOcgbeWNH6",
+		JSessionId: "BEBFF76A71CB483F7F2AB869188E25E5",
 		Guid:       "99f79e3e51d78d8770571821802e9a11",
 	})
 

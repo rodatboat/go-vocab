@@ -285,22 +285,49 @@ func (r *Runner) SaveQuestionToDB(question model.Question) {
 	}
 }
 
-type OllamaPayload struct {
-	Context  string                  `json:"context"`
-	Question string                  `json:"question"`
-	Choices  []model.QuestionChoices `json:"choices"`
+func (r *Runner) GetAnswerFromDB(question model.Question) (*model.QuestionChoices, error) {
+	query := `
+		SELECT answer, answer_data_key
+		FROM question
+		WHERE question_type = $1 AND question_context = $2 AND question = $3 AND correct = TRUE
+	`
+
+	var answer string
+	var code string
+	err := r.Conn.QueryRow(context.Background(), query, question.QuestionType, question.QuestionContext, question.Question).Scan(&answer, &code)
+	if err != nil {
+		return nil, err
+	}
+
+	return &model.QuestionChoices{
+		Key:   code,
+		Value: answer,
+	}, nil
 }
 
 func (r *Runner) Ask(question model.Question) model.QuestionChoices {
-	// TODO: First check DB for existing answer. If not found, call LLM.
-	// If found, return that answer directly.
+	// If existing answer is found, return that answer directly.
+	foundAnswer, err := r.GetAnswerFromDB(question)
+	if err == nil {
+		fmt.Println("Found existing answer in DB, using that...")
+		return *foundAnswer
+	}
+
 	LLM_URI := "http://localhost:11434/api/generate"
 
-	payload := &OllamaPayload{
+	prompt := model.Prompt{
 		Context:  question.QuestionContext,
 		Question: question.Question,
 		Choices:  question.Choices,
 	}
+	promptJson, err := json.Marshal(prompt)
+	if err != nil {
+		fmt.Println("Error marshaling JSON:", err)
+		promptJson = nil
+	}
+
+	payload := model.PromptTemplate
+	payload.Prompt = string(promptJson)
 
 	payloadJson, err := json.Marshal(payload)
 	if err != nil {
@@ -308,9 +335,8 @@ func (r *Runner) Ask(question model.Question) model.QuestionChoices {
 		payloadJson = nil
 	}
 	payloadString := string(payloadJson)
-	query := fmt.Sprintf(r.ctx.OllamaQuery, payloadString)
 
-	req, err := http.NewRequest("POST", LLM_URI, bytes.NewBuffer([]byte(query)))
+	req, err := http.NewRequest("POST", LLM_URI, bytes.NewBuffer([]byte(payloadString)))
 	if err != nil {
 		fmt.Println("Error creating request:", err)
 	}
