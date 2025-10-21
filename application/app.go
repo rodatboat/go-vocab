@@ -526,13 +526,12 @@ func (r *Runner) Practice() {
 	// r.ctx.CurrentQuestion = r.NextQuestion()
 	for {
 		fmt.Println("Current completion percentage:", r.ctx.CurrentCompletionPercentage)
-		fmt.Println("Points earned so far:", r.ctx.PointsEarned)
 		fmt.Println("Context:", r.ctx.CurrentQuestion.QuestionContext)
 		fmt.Println("Question:", r.ctx.CurrentQuestion.Question)
 
 		answer := r.Ask(*r.ctx.CurrentQuestion)
 
-		time.Sleep(3 * time.Second)
+		utils.RandomSleep(1200, 3100)
 		r.AnswerQuestion(answer)
 
 		if r.ctx.CurrentCompletionPercentage == 1 {
@@ -544,9 +543,7 @@ func (r *Runner) Practice() {
 			r.AnswerQuestion(answer)
 		}
 
-		time.Sleep(3 * time.Second)
+		utils.RandomSleep(1200, 3100)
 		r.ctx.CurrentQuestion = r.NextQuestion()
-
-		time.Sleep(3 * time.Second)
 	}
 }

@@ -150,6 +150,13 @@ func GenerateRandomTime() int {
 	return result
 }
 
+func RandomSleep(minMs int, maxMs int) {
+	source := rand.NewSource(time.Now().UnixNano())
+	r := rand.New(source)
+	randomDuration := time.Duration(r.Intn(maxMs-minMs)+minMs) * time.Millisecond
+	time.Sleep(randomDuration)
+}
+
 func RetrieveCookies(cookies []*http.Cookie, existingCookies []cycletls.Cookie) []cycletls.Cookie {
 	var newCookiesMap map[string]cycletls.Cookie = make(map[string]cycletls.Cookie)
 	for _, existingCookie := range existingCookies {
