@@ -408,7 +408,6 @@ func (r *Runner) AnswerQuestion(answer model.QuestionChoices) {
 	r.clientOptions.Body = formData.Encode()
 	r.clientOptions.Headers["Content-Type"] = CONTENT_TYPE_URL_ENCODED
 
-	fmt.Println("Answering question...")
 	resp, err := r.client.Do(SAVE_ANSWER_URI, r.clientOptions, "POST")
 	if err != nil {
 		fmt.Println("Error making HTTP request:", err)
@@ -443,11 +442,15 @@ func (r *Runner) AnswerQuestion(answer model.QuestionChoices) {
 		err := errors.New("failed to decode answer JSON")
 		panic(err)
 	}
+	fmt.Println("Answering:", answer)
+
 	wasCorrect, ok := answerJson["correct"].(bool)
 	if !ok {
 		err := errors.New("failed to decode wasCorrect JSON")
 		panic(err)
 	}
+	fmt.Println("Answer was correct?", wasCorrect)
+
 	targetWord, ok := answerJson["word"].(string)
 	if !ok {
 		err := errors.New("failed to decode target word JSON")
@@ -522,6 +525,11 @@ func (r *Runner) Practice() {
 	r.ctx.CurrentQuestion = r.Start(r.ctx.ListId)
 	// r.ctx.CurrentQuestion = r.NextQuestion()
 	for {
+		fmt.Println("Current completion percentage:", r.ctx.CurrentCompletionPercentage)
+		fmt.Println("Points earned so far:", r.ctx.PointsEarned)
+		fmt.Println("Context:", r.ctx.CurrentQuestion.QuestionContext)
+		fmt.Println("Question:", r.ctx.CurrentQuestion.Question)
+
 		answer := r.Ask(*r.ctx.CurrentQuestion)
 
 		time.Sleep(3 * time.Second)
@@ -539,7 +547,6 @@ func (r *Runner) Practice() {
 		time.Sleep(3 * time.Second)
 		r.ctx.CurrentQuestion = r.NextQuestion()
 
-		fmt.Println("Sleeping for 3 seconds...")
 		time.Sleep(3 * time.Second)
 	}
 }
