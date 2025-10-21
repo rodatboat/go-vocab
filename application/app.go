@@ -35,7 +35,6 @@ type RunParams struct {
 
 type RunContext struct {
 	ListId                      int
-	OllamaQuery                 string
 	CurrentQuestion             *model.Question
 	PointsEarned                float64
 	Secret                      string
@@ -74,12 +73,6 @@ func New(params RunParams) *Runner {
 		panic(err)
 	}
 
-	rawQuery, err := os.ReadFile("./db/ai_query.json")
-	if err != nil {
-		fmt.Println("Error reading ai_query.json:", err)
-		panic(err)
-	}
-
 	userAgent := "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36 OPR/117.0.0.0"
 	options := cycletls.Options{
 		// Ja3: params.Ja3,
@@ -104,9 +97,8 @@ func New(params RunParams) *Runner {
 			password: "password",
 		},
 		ctx: &RunContext{
-			ListId:      params.ListId,
-			Cookies:     options.Cookies,
-			OllamaQuery: string(rawQuery),
+			ListId:  params.ListId,
+			Cookies: options.Cookies,
 		},
 		client:        cycletls.Init(),
 		clientOptions: options,
