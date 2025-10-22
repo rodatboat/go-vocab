@@ -26,7 +26,7 @@ type OllamaRequest struct {
 }
 
 var PromptTemplate = OllamaRequest{
-	Model:  "llama3.1:latest",
+	Model:  "llama3.2:1b",
 	System: "You're a a vocabulary teacher, that answers my questions about vocabulary. You not modify the question, and will keep the question and answers as received. You will respond with just the answer, and the respective code for that answer. Every answer MUST contain a code, from the choices provided. Example Input: context: 'Nearly 150 years later, the battle, which has been scrutinized by historians and immortalized in popular culture, is still steeped in controversy.'\n question: 'In the sentence above, immortalized has the same or almost the same meaning as:'\n choices:[{'key':'njnqx9','value':'reconnoitered'},{'key':'kps3g9','value':'disseminated'},{'key':'39ri9j','value':'circumvented'},{'key':'mo1y8u','value':'commemorated'}]\n answer: {answer:'commemorated', code:'mo1y8u'}}",
 	Prompt: "",
 	Format: Format{
